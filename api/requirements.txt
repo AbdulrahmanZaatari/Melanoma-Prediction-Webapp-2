@@ -6,3 +6,6 @@ pillow
 numpy
 pydantic
 python-multipart
+python-dotenv
+python-jose
+passlib[bcrypt]
