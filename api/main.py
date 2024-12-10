@@ -29,6 +29,9 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 30
 ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "admin")
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "admin_password")  # Plain text password
 
+# Initialize OAuth2PasswordBearer
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
 def authenticate_user(username: str, password: str):
     """Authenticate user credentials."""
     if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
