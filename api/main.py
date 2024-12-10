@@ -11,7 +11,6 @@ from io import BytesIO
 from PIL import Image
 import os
 from jose import JWTError, jwt
-from passlib.context import CryptContext
 from dotenv import load_dotenv
 
 # Load environment variables from .env
@@ -26,21 +25,13 @@ SECRET_KEY = os.getenv("SECRET_KEY", "default_secret_key")  # Use a secure key i
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
-# Password hashing
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
-
 # Fetch admin credentials from environment variables
 ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "admin")
-ADMIN_PASSWORD_HASH = os.getenv("ADMIN_PASSWORD_HASH", pwd_context.hash("admin_password"))  # Replace with a hashed password
-
-def verify_password(plain_password, hashed_password):
-    """Verify hashed password."""
-    return pwd_context.verify(plain_password, hashed_password)
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "admin_password")  # Plain text password
 
 def authenticate_user(username: str, password: str):
     """Authenticate user credentials."""
-    if username == ADMIN_USERNAME and verify_password(password, ADMIN_PASSWORD_HASH):
+    if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
         return {"username": ADMIN_USERNAME}
     return None
 
@@ -148,6 +139,6 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
 
 # Uncomment the following block for deployment
 if __name__ == "__main__":
-     port = int(os.getenv("PORT", 8000))  # Default to 8000 if PORT is not set
-     uvicorn.run(app, host="0.0.0.0", port=port)
+    port = int(os.getenv("PORT", 8000))  # Default to 8000 if PORT is not set
+    uvicorn.run(app, host="0.0.0.0", port=port)
 # (For deployment use this)
