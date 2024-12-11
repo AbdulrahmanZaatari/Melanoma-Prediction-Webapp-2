@@ -26,6 +26,7 @@ import ClearIcon from "@mui/icons-material/Clear";
 import axios from "axios";
 import bgImage from "./assets/bg.avif";
 import Logo from "./assets/logo.jpg";
+import LAUlogo from "./assets/image.png";
 
 const ColorButton = styled(Button)(({ theme }) => ({
   color: theme.palette.getContrastText(theme.palette.common.white),
@@ -172,11 +173,21 @@ const Home = () => {
   return (
     <React.Fragment>
       <AppBar position="static" sx={{ background: "#6a8abe", padding: "0 20px" }}>
-        <Toolbar>
-          <Typography variant="h6" sx={{ flexGrow: 1 }}>
-            Melanoma Detection Predictive webapp
-            <Avatar src={Logo} sx={{ marginLeft: "10px" }} />
-          </Typography>
+      <Toolbar sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+    {/* LAU Logo on the Left */}
+    <Avatar
+      src={LAUlogo}
+      alt="LAU Logo"
+      sx={{
+        width: 50, // Adjust size
+        height: 50, // Adjust size
+        marginLeft: "10px",
+      }}
+    />
+    {/* Typography in the Center */}
+    <Typography variant="h6" sx={{ textAlign: "center", flexGrow: 1 }}>
+      LAU School of Arts and Sciences: Melanoma Detection Predictive Webapp
+    </Typography>
           {isLoggedIn && (
             <Button color="inherit" onClick={handleLogout}>
               Logout
@@ -211,7 +222,8 @@ const Home = () => {
               Login
             </Button>
             <Typography sx={{ marginTop: "20px" }} variant="body2" align="center">
-              LAU students: Abdul Rahman Al Zaatari & Tamim Eter
+              Done by: Abdul Rahman Al Zaatari, Email: abdulrahman.alzaatari@lau.edu
+              <br/> Tamim Eter, Email: tamim.eter@lau.edu
               <br />
               Under mentorship of: Dr. Seifedine Kadry
             </Typography>
@@ -275,7 +287,8 @@ const Home = () => {
               </CardContent>
             )}
             <Typography sx={{ marginTop: "20px" }} variant="body2" align="center">
-              LAU students: Abdul Rahman Al Zaatari & Tamim Eter
+            Done by: Abdul Rahman Al Zaatari, Email: abdulrahman.alzaatari@lau.edu
+              <br/> Tamim Eter, Email: tamim.eter@lau.edu
               <br />
               Under mentorship of: Dr. Seifedine Kadry
             </Typography>
