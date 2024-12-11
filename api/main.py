@@ -29,7 +29,7 @@ ADMIN_PASSWORD = "medicalsociety1298!"
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 def authenticate_user(username: str, password: str):
-    """Authenticate user credentials."""
+    print(f"Debug: Received username={username}, password={password}")
     if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
         return {"username": ADMIN_USERNAME}
     return None
