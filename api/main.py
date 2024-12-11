@@ -11,23 +11,19 @@ from io import BytesIO
 from PIL import Image
 import os
 from jose import JWTError, jwt
-from dotenv import load_dotenv
-
-# Load environment variables from .env
-load_dotenv()
 
 # Define paths and class names
 MODEL_PATH = "saved_models/1.pth"  # Adjusted path for the model file
 CLASS_NAMES = ['benign', 'malignant']  # Define your class names
 
 # JWT configurations
-SECRET_KEY = os.getenv("SECRET_KEY", "default_secret_key")  # Use a secure key in production
+SECRET_KEY = "supersecretkey"  # Use a secure key in production
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
-# Fetch admin credentials from environment variables
-ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "admin")
-ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "admin_password")  # Plain text password
+# Hardcoded admin credentials
+ADMIN_USERNAME = "medicalSociety"
+ADMIN_PASSWORD = "medicalsociety1298!"
 
 # Initialize OAuth2PasswordBearer
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")

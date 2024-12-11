@@ -12,7 +12,6 @@ import {
   Paper,
   CardActionArea,
   CardMedia,
-  Grid,
   TableContainer,
   Table,
   TableBody,
@@ -26,9 +25,8 @@ import {
 import ClearIcon from "@mui/icons-material/Clear";
 import axios from "axios";
 import bgImage from "./assets/bg.avif";
-import lauLogo from "./assets/lau-logo-social-media.jpg";
+import Logo from "./assets/logo.jpg";
 
-// Styled button with custom hover effect
 const ColorButton = styled(Button)(({ theme }) => ({
   color: theme.palette.getContrastText(theme.palette.common.white),
   backgroundColor: theme.palette.common.white,
@@ -37,22 +35,22 @@ const ColorButton = styled(Button)(({ theme }) => ({
   },
 }));
 
-// Main container for background and centering
-const MainContainer = styled(Container)(() => ({
+const MainContainer = styled("div")(() => ({
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
   backgroundImage: `url(${bgImage})`,
   backgroundRepeat: "no-repeat",
   backgroundPosition: "center",
   backgroundSize: "cover",
-  height: "100vh",
-  display: "flex",
-  justifyContent: "center",
-  alignItems: "center",
-  flexDirection: "column",
+  width: "100vw", // Full width of the viewport
+  height: "100vh", // Full height of the viewport
+  overflow: "hidden",
 }));
 
-// Card container for the login form
-const LoginContainer = styled(Card)(() => ({
-  width: "400px",
+const CenteredCard = styled(Card)(({ theme }) => ({
+  width: "100%",
+  maxWidth: "600px", // Adjust maximum width for responsiveness
   padding: "20px",
   boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
   borderRadius: "10px",
@@ -69,11 +67,48 @@ const Home = () => {
   const [selectedFile, setSelectedFile] = useState();
   const [preview, setPreview] = useState();
   const [data, setData] = useState();
-  const [image, setImage] = useState(false);
+  const [confidence, setConfidence] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
-  let confidence = 0;
 
-  const API_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+  const API_URL = "http://127.0.0.1:8000" || import.meta.env.VITE_API_URL;
+
+  const sendFile = async () => {
+    if (!selectedFile) return;
+
+    let formData = new FormData();
+    formData.append("file", selectedFile);
+
+    const token = localStorage.getItem("token");
+
+    try {
+      const res = await axios.post(`${API_URL}/predict`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (res.status === 200) {
+        setData(res.data);
+        setConfidence((parseFloat(res.data.confidence) * 100).toFixed(2));
+      }
+    } catch (error) {
+      console.error("Error uploading file:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!selectedFile) {
+      setPreview(undefined);
+      return;
+    }
+    const objectUrl = URL.createObjectURL(selectedFile);
+    setPreview(objectUrl);
+    setIsLoading(true);
+    sendFile();
+    return () => URL.revokeObjectURL(objectUrl);
+  }, [selectedFile]);
 
   const handleLogin = async () => {
     try {
@@ -98,75 +133,49 @@ const Home = () => {
     setSelectedFile(null);
     setPreview(null);
     setData(null);
+    setConfidence(0);
   };
 
-  const sendFile = async () => {
-    if (image) {
-      let formData = new FormData();
-      formData.append("file", selectedFile);
-
-      try {
-        const token = localStorage.getItem("token");
-        const response = await axios.post(`${API_URL}/predict`, formData, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data",
-          },
-        });
-        setData(response.data);
-      } catch (error) {
-        console.error("Error uploading file:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-  };
-
-  const clearData = () => {
-    setData(null);
-    setImage(false);
+  const handleClear = () => {
     setSelectedFile(null);
     setPreview(null);
+    setData(null);
+    setConfidence(0);
   };
 
-  useEffect(() => {
-    if (!selectedFile) {
-      setPreview(undefined);
-      return;
-    }
-    const objectUrl = URL.createObjectURL(selectedFile);
-    setPreview(objectUrl);
-  }, [selectedFile]);
+  const Dropzone = () => {
+    const { getRootProps, getInputProps } = useDropzone({
+      onDrop: (acceptedFiles) => {
+        if (acceptedFiles && acceptedFiles.length > 0) {
+          setSelectedFile(acceptedFiles[0]);
+          setData(undefined);
+          setConfidence(0);
+        }
+      },
+      multiple: false,
+      accept: "image/*",
+    });
 
-  useEffect(() => {
-    if (!preview) return;
-    setIsLoading(true);
-    sendFile();
-  }, [preview]);
-
-  const onSelectFile = (files) => {
-    if (!files || files.length === 0) {
-      setSelectedFile(undefined);
-      setImage(false);
-      setData(undefined);
-      return;
-    }
-    setSelectedFile(files[0]);
-    setData(undefined);
-    setImage(true);
+    return (
+      <div
+        {...getRootProps()}
+        style={{ border: "2px dashed #ddd", padding: "20px", textAlign: "center" }}
+      >
+        <input {...getInputProps()} />
+        <Typography>
+          Drag and drop an image of your skin to test for melanoma, or click to select one
+        </Typography>
+      </div>
+    );
   };
-
-  if (data) {
-    confidence = (parseFloat(data.confidence) * 100).toFixed(2);
-  }
 
   return (
     <React.Fragment>
       <AppBar position="static" sx={{ background: "#6a8abe", padding: "0 20px" }}>
         <Toolbar>
           <Typography variant="h6" sx={{ flexGrow: 1 }}>
-            Melanoma Detection
-            <Avatar src={lauLogo} sx={{ marginLeft: "10px" }} />
+            Melanoma Detection Predictive webapp
+            <Avatar src={Logo} sx={{ marginLeft: "10px" }} />
           </Typography>
           {isLoggedIn && (
             <Button color="inherit" onClick={handleLogout}>
@@ -176,9 +185,9 @@ const Home = () => {
         </Toolbar>
       </AppBar>
 
-      {!isLoggedIn ? (
-        <MainContainer>
-          <LoginContainer>
+      <MainContainer>
+        {!isLoggedIn ? (
+          <CenteredCard>
             <Typography variant="h5" align="center" gutterBottom>
               Admin Login
             </Typography>
@@ -201,68 +210,78 @@ const Home = () => {
             <Button variant="contained" color="primary" fullWidth onClick={handleLogin}>
               Login
             </Button>
-            <Typography variant="body2" align="center" sx={{ marginTop: "20px" }}>
-              Abdul Rahman Al Zaatari & Tamim Eter
+            <Typography sx={{ marginTop: "20px" }} variant="body2" align="center">
+              LAU students: Abdul Rahman Al Zaatari & Tamim Eter
+              <br />
+              Under mentorship of: Dr. Seifedine Kadry
             </Typography>
-          </LoginContainer>
-        </MainContainer>
-      ) : (
-        <MainContainer>
-          <Grid container justifyContent="center" spacing={2}>
-            <Grid item xs={12}>
-              <Card sx={{ maxWidth: 400, margin: "auto", boxShadow: 3 }}>
-                {image ? (
-                  <CardActionArea>
-                    <CardMedia
-                      component="img"
-                      height="400"
-                      image={preview}
-                      alt="Selected Image Preview"
-                    />
-                  </CardActionArea>
-                ) : (
-                  <CardContent>
-                    <Dropzone onDrop={(acceptedFiles) => onSelectFile(acceptedFiles)} />
-                  </CardContent>
-                )}
-                {data && (
-                  <CardContent>
-                    <TableContainer component={Paper}>
-                      <Table>
-                        <TableHead>
-                          <TableRow>
-                            <TableCell><strong>Label</strong></TableCell>
-                            <TableCell align="right"><strong>Confidence</strong></TableCell>
-                          </TableRow>
-                        </TableHead>
-                        <TableBody>
-                          <TableRow>
-                            <TableCell>{data.class}</TableCell>
-                            <TableCell align="right">{confidence}%</TableCell>
-                          </TableRow>
-                        </TableBody>
-                      </Table>
-                    </TableContainer>
-                  </CardContent>
-                )}
-                {isLoading && (
-                  <CardContent sx={{ textAlign: "center" }}>
-                    <CircularProgress />
-                    <Typography>Processing</Typography>
-                  </CardContent>
-                )}
-              </Card>
-            </Grid>
+          </CenteredCard>
+        ) : (
+          <CenteredCard>
+            {preview && (
+              <CardActionArea>
+                <CardMedia
+                  component="img"
+                  height="400"
+                  image={preview}
+                  alt="Selected Image Preview"
+                />
+              </CardActionArea>
+            )}
+            {!preview && (
+              <CardContent>
+                <Dropzone />
+              </CardContent>
+            )}
             {data && (
-              <Grid item>
-                <ColorButton variant="contained" onClick={clearData} startIcon={<ClearIcon />}>
+              <CardContent>
+                <TableContainer component={Paper}>
+                  <Table size="small">
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>
+                          <strong>Label</strong>
+                        </TableCell>
+                        <TableCell align="right">
+                          <strong>Confidence</strong>
+                        </TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      <TableRow>
+                        <TableCell>{data.class}</TableCell>
+                        <TableCell align="right">{confidence}%</TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </CardContent>
+            )}
+            {isLoading && (
+              <CardContent sx={{ textAlign: "center" }}>
+                <CircularProgress />
+                <Typography>Processing</Typography>
+              </CardContent>
+            )}
+            {(data || preview) && (
+              <CardContent>
+                <ColorButton
+                  variant="contained"
+                  onClick={handleClear}
+                  startIcon={<ClearIcon />}
+                >
                   Clear
                 </ColorButton>
-              </Grid>
+              </CardContent>
             )}
-          </Grid>
-        </MainContainer>
-      )}
+            <Typography sx={{ marginTop: "20px" }} variant="body2" align="center">
+              LAU students: Abdul Rahman Al Zaatari & Tamim Eter
+              <br />
+              Under mentorship of: Dr. Seifedine Kadry
+            </Typography>
+          </CenteredCard>
+        )}
+      </MainContainer>
     </React.Fragment>
   );
 };
