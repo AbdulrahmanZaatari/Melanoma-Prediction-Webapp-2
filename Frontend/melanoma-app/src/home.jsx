@@ -70,7 +70,7 @@ const Home = () => {
   const [confidence, setConfidence] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
 
-  const API_URL = "http://127.0.0.1:8000" || import.meta.env.VITE_API_URL;
+  const API_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
 
   const sendFile = async () => {
     if (!selectedFile) return;
